@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Dota 2 Tournaments</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+<body>
+    <div id="app">
+        <div id="main-screen" class="screen active">
+            <div class="header">
+                <div class="balance-container">
+                    <div class="balance-label">Баланс</div>
+                    <div class="balance" id="balance">5000 ₽</div>
+                </div>
+            </div>
+            <div class="main-content">
+                <div class="logo">
+                    <h1>DOTA 2</h1>
+                    <p class="subtitle">1V1 ТУРНИРЫ</p>
+                </div>
+                <div class="stakes-container">
+                    <h3>Выберите ставку</h3>
+                    <div class="stakes-grid">
+                        <button class="stake-btn" data-amount="100">100 ₽</button>
+                        <button class="stake-btn" data-amount="250">250 ₽</button>
+                        <button class="stake-btn" data-amount="500">500 ₽</button>
+                        <button class="stake-btn" data-amount="1000">1000 ₽</button>
+                        <button class="stake-btn" data-amount="2000">2000 ₽</button>
+                    </div>
+                </div>
+                <button id="find-match-btn" class="primary-btn" disabled>
+                    <span>Найти соперника</span>
+                </button>
+            </div>
+        </div>
+        <div id="search-screen" class="screen">
+            <div class="search-content">
+                <div class="search-animation">
+                    <div class="spinner"></div>
+                </div>
+                <h2>Поиск соперника</h2>
+                <p class="search-info">Ставка: <span id="selected-stake">0</span> ₽</p>
+                <p class="search-timer" id="search-timer">00:00</p>
+                <button id="cancel-search-btn" class="secondary-btn">Отменить</button>
+            </div>
+        </div>
+        <div id="payment-screen" class="screen">
+            <div class="payment-content">
+                <h2>Подтверждение оплаты</h2>
+                <div class="payment-details">
+                    <div class="payment-row">
+                        <span>Вход в турнир:</span>
+                        <span id="payment-amount">0 ₽</span>
+                    </div>
+                    <div class="payment-row">
+                        <span>Призовой фонд:</span>
+                        <span id="prize-amount" class="prize">0 ₽</span>
+                    </div>
+                </div>
+                <div class="payment-buttons">
+                    <button id="confirm-payment-btn" class="primary-btn">Оплатить</button>
+                    <button id="cancel-payment-btn" class="secondary-btn">Отмена</button>
+                </div>
+            </div>
+        </div>
+        <div id="match-found-screen" class="screen">
+            <div class="match-content">
+                <h2 class="success">Соперник найден!</h2>
+                <div class="players">
+                    <div class="player">
+                        <div class="player-avatar">👤</div>
+                        <p id="player1-name">Вы</p>
+                    </div>
+                    <div class="vs">VS</div>
+                    <div class="player">
+                        <div class="player-avatar">👤</div>
+                        <p id="player2-name">Соперник</p>
+                    </div>
+                </div>
+                <div class="match-info">
+                    <p>Призовой фонд: <span class="prize" id="match-prize">0 ₽</span></p>
+                    <p class="instruction">Создайте лобби в Dota 2 и пригласите соперника</p>
+                </div>
+                <button id="close-match-btn" class="primary-btn">Понятно</button>
+            </div>
+        </div>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,15 @@
+node_modules/ 
+backend/node_modules/ 
+.env 
+backend/.env 
+*.db 
+*.sqlite 
+backend/database/*.db 
+*.log 
+logs/ 
+.DS_Store 
+Thumbs.db 
+.vscode/ 
+.idea/ 
+dist/ 
+build/ 
