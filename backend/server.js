@@ -1,21 +1,5 @@
 const express = require('express');
 const cors = require('cors');
-const config = require('./config');
-// const db = require('./database/db'); // <-- закомментируй эту строку
-
-// Заглушка для БД (для теста без базы данных)
-const db = {
-    getUser: async (telegram_id) => {
-        return { telegram_id, username: 'test_user', balance: 5000 };
-    },
-    createUser: async (data) => {
-        return { ...data, balance: 5000 };
-    },
-    updateBalance: async () => true,
-    createTransaction: async () => true,
-    createMatch: async () => ({ id: 1 })
-};
-
 
 const app = express();
 
@@ -23,21 +7,8 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Очередь игроков для матчмейкинга
-const matchmakingQueue = new Map();
-
-// Инициализация базы данных - ЗАКОММЕНТИРУЙ ЭТО:
-// db.connect().then(() => {
-//     console.log('🚀 Сервер запущен');
-// }).catch(err => {
-//     console.error('Ошибка запуска:', err);
-//     process.exit(1);
-// });
-
-// ВМЕСТО ЭТОГО НАПИШИ:
-console.log('🚀 Сервер запущен (без БД для теста)');
-
-// ... остальной код без изменений
+// Заглушка данных пользователей (в памяти)
+const users = new Map();
 
 // API: Получить/создать пользователя
 app.post('/api/user', async (req, res) => {
@@ -45,121 +16,56 @@ app.post('/api/user', async (req, res) => {
         const { telegram_id, username, first_name } = req.body;
         
         if (!telegram_id) {
-            return res.status(400).json({ error: 'telegram_id обязателен' });
+            return res.status(400).json({ success: false, error: 'telegram_id обязателен' });
         }
 
-        let user = await db.getUser(telegram_id);
+        let user = users.get(telegram_id);
         
         if (!user) {
-            // Создать нового пользователя
-            await db.createUser(telegram_id, username, first_name);
-            user = await db.getUser(telegram_id);
+            user = {
+                telegram_id,
+                username: username || 'user_' + telegram_id,
+                first_name: first_name || 'User',
+                balance: 5000
+            };
+            users.set(telegram_id, user);
             console.log(`✅ Новый пользователь: ${first_name} (${telegram_id})`);
         }
 
         res.json({ success: true, user });
     } catch (error) {
         console.error('Ошибка /api/user:', error);
-        res.status(500).json({ error: 'Ошибка сервера' });
+        res.status(500).json({ success: false, error: 'Ошибка сервера' });
     }
 });
 
-// API: Начать поиск соперника
+// API: Начать матчмейкинг
 app.post('/api/matchmaking/start', async (req, res) => {
     try {
         const { telegram_id, stake } = req.body;
-
-        if (!telegram_id || !stake) {
-            return res.status(400).json({ error: 'Неверные данные' });
-        }
-
-        // Проверить баланс
-        const user = await db.getUser(telegram_id);
-        if (!user || user.balance < stake) {
-            return res.status(400).json({ error: 'Недостаточно средств' });
-        }
-
-        // Списать ставку
-        await db.updateBalance(telegram_id, -stake);
-        await db.createTransaction(telegram_id, 'bet', -stake);
-
-        // Добавить в очередь
-        if (!matchmakingQueue.has(stake)) {
-            matchmakingQueue.set(stake, []);
-        }
-
-        const queue = matchmakingQueue.get(stake);
         
-        // Проверить есть ли ожидающий игрок
-        if (queue.length > 0) {
-            const opponent = queue.shift();
-            
-            // Создать матч
-            const prize = Math.floor(stake * config.PRIZE_MULTIPLIER);
-            const matchId = await db.createMatch(telegram_id, opponent.telegram_id, stake, prize);
-
-            console.log(`🎮 Матч создан: ${user.first_name} vs ${opponent.first_name} (${stake}₽)`);
-
-            res.json({
-                success: true,
-                match_found: true,
-                match: {
-                    id: matchId,
-                    opponent: {
-                        telegram_id: opponent.telegram_id,
-                        first_name: opponent.first_name,
-                        username: opponent.username
-                    },
-                    stake,
-                    prize
-                }
-            });
-
-            // Уведомить оппонента (через WebSocket или сохраним для следующего этапа)
-        } else {
-            // Добавить в очередь ожидания
-            queue.push({
-                telegram_id,
-                first_name: user.first_name,
-                username: user.username,
-                timestamp: Date.now()
-            });
-
-            res.json({
-                success: true,
-                match_found: false,
-                message: 'В очереди поиска'
-            });
+        if (!telegram_id || !stake) {
+            return res.status(400).json({ success: false, error: 'Неверные данные' });
         }
+
+        console.log(`🎮 Игрок ${telegram_id} ищет матч со ставкой ${stake}₽`);
+
+        // Имитация: сразу найден соперник
+        res.json({
+            success: true,
+            match_found: true,
+            match: {
+                opponent: {
+                    first_name: 'Player_' + Math.floor(Math.random() * 9999),
+                    username: 'player' + Math.floor(Math.random() * 9999)
+                },
+                stake: stake,
+                prize: Math.floor(stake * 1.8)
+            }
+        });
     } catch (error) {
         console.error('Ошибка /api/matchmaking/start:', error);
-        res.status(500).json({ error: 'Ошибка сервера' });
-    }
-});
-
-// API: Отменить поиск
-app.post('/api/matchmaking/cancel', async (req, res) => {
-    try {
-        const { telegram_id, stake } = req.body;
-
-        const queue = matchmakingQueue.get(stake);
-        if (queue) {
-            const index = queue.findIndex(p => p.telegram_id === telegram_id);
-            if (index !== -1) {
-                queue.splice(index, 1);
-                
-                // Вернуть ставку
-                await db.updateBalance(telegram_id, stake);
-                await db.createTransaction(telegram_id, 'refund', stake);
-
-                console.log(`❌ Поиск отменен: ${telegram_id}`);
-            }
-        }
-
-        res.json({ success: true });
-    } catch (error) {
-        console.error('Ошибка /api/matchmaking/cancel:', error);
-        res.status(500).json({ error: 'Ошибка сервера' });
+        res.status(500).json({ success: false, error: 'Ошибка сервера' });
     }
 });
 
@@ -167,7 +73,7 @@ app.post('/api/matchmaking/cancel', async (req, res) => {
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, '0.0.0.0', () => {
-    console.log(`🚀 Сервер запущен (без БД для теста)`);
+    console.log(`🚀 Dota 2 Tournaments API запущен`);
     console.log(`🌐 Порт: ${PORT}`);
     console.log(`📡 Railway URL: https://dota-tournament-app-production.up.railway.app`);
 });
