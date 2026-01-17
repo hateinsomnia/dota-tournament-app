@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const config = require('./config');
-const db = require('./database/db');
+// const db = require('./database/db'); // <-- закомментируй эту строку
 
 const app = express();
 
@@ -10,15 +10,20 @@ app.use(cors());
 app.use(express.json());
 
 // Очередь игроков для матчмейкинга
-const matchmakingQueue = new Map(); // stake -> [players]
+const matchmakingQueue = new Map();
 
-// Инициализация базы данных
-db.connect().then(() => {
-    console.log('🚀 Сервер запущен');
-}).catch(err => {
-    console.error('Ошибка запуска:', err);
-    process.exit(1);
-});
+// Инициализация базы данных - ЗАКОММЕНТИРУЙ ЭТО:
+// db.connect().then(() => {
+//     console.log('🚀 Сервер запущен');
+// }).catch(err => {
+//     console.error('Ошибка запуска:', err);
+//     process.exit(1);
+// });
+
+// ВМЕСТО ЭТОГО НАПИШИ:
+console.log('🚀 Сервер запущен (без БД для теста)');
+
+// ... остальной код без изменений
 
 // API: Получить/создать пользователя
 app.post('/api/user', async (req, res) => {
