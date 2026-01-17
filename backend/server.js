@@ -145,7 +145,7 @@ app.post('/api/matchmaking/cancel', async (req, res) => {
 });
 
 // Запуск сервера
-const PORT = config.PORT;
+const PORT = process.env.PORT || config.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`🌐 Сервер работает на http://localhost:${PORT}`);
 });
