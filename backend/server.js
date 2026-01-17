@@ -3,6 +3,20 @@ const cors = require('cors');
 const config = require('./config');
 // const db = require('./database/db'); // <-- закомментируй эту строку
 
+// Заглушка для БД (для теста без базы данных)
+const db = {
+    getUser: async (telegram_id) => {
+        return { telegram_id, username: 'test_user', balance: 5000 };
+    },
+    createUser: async (data) => {
+        return { ...data, balance: 5000 };
+    },
+    updateBalance: async () => true,
+    createTransaction: async () => true,
+    createMatch: async () => ({ id: 1 })
+};
+
+
 const app = express();
 
 // Middleware
