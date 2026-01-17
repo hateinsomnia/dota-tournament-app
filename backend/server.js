@@ -151,6 +151,7 @@ app.post('/api/matchmaking/cancel', async (req, res) => {
 
 // Запуск сервера
 const PORT = process.env.PORT || config.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`🌐 Сервер работает на http://localhost:${PORT}`);
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`🌐 Сервер работает на порту ${PORT}`);
+    console.log(`🚀 Railway URL: https://dota-tournament-app-production.up.railway.app`);
 });
